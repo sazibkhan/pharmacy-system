@@ -1,11 +1,8 @@
 package com.pharmacy.pharmacyservice.entity;
 
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
-
 
 @Entity
 @Getter
@@ -35,7 +32,5 @@ public class SalesItemEntity {
 
     @Column(name = "discount_amount")
     private Double discountAmount;
-
-
 
 }

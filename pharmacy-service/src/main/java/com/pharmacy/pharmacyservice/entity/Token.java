@@ -10,8 +10,8 @@ import lombok.ToString;
 public class Token {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private int id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
 
     private String token;
 
@@ -25,18 +25,18 @@ public class Token {
     public Token() {
     }
 
-    public Token(int id, String token, boolean isLogout, User user) {
+    public Token(long id, String token, boolean isLogout, User user) {
         this.id = id;
         this.token = token;
         this.isLogout = isLogout;
         this.user = user;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

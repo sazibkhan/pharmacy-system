@@ -1,5 +1,6 @@
 package com.pharmacy.pharmacyservice.service;
 
+import com.pharmacy.pharmacyservice.dto.request.UserLoginRequest;
 import com.pharmacy.pharmacyservice.dto.response.AuthenticationResponse;
 import com.pharmacy.pharmacyservice.entity.Token;
 import com.pharmacy.pharmacyservice.entity.User;
@@ -8,6 +9,8 @@ import com.pharmacy.pharmacyservice.repository.TokenRepository;
 import com.pharmacy.pharmacyservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -31,7 +35,7 @@ public class AuthService {
     private String uploadDir;
 
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
-                       TokenRepository tokenRepository, AuthenticationManager authenticationManager) {
+            TokenRepository tokenRepository, AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
@@ -39,9 +43,7 @@ public class AuthService {
         this.authenticationManager = authenticationManager;
     }
 
-
     public AuthenticationResponse registration(User user, MultipartFile file) {
-        // check 1st,
         checkUser(user);
 
         if (file == null || file.isEmpty()) {
@@ -62,7 +64,6 @@ public class AuthService {
         newUser.setRole(user.getRole());
         newUser.setAddress(user.getAddress());
 
-
         newUser.setLock(true);
         newUser.setActive(false);
         newUser.setImage(savedImae(file, user));
@@ -72,6 +73,33 @@ public class AuthService {
         savedToken(jwt, user);
         return new AuthenticationResponse(jwt, "User successfully registered!");
 
+    }
+
+    public AuthenticationResponse authenticate(UserLoginRequest request) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()));
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found by this email!.."));
+        String jwt = jwtService.generateToken(user);
+
+        removeAllTokenByUser(user);
+        savedToken(jwt, user);
+        return new AuthenticationResponse(jwt, "Logged in Successfully");
+
+    }
+
+    private void removeAllTokenByUser(User user) {
+        List<Token> valiedTokens = tokenRepository.findTokenByUserId(user.getId());
+
+        if (valiedTokens.isEmpty()) {
+            return;
+        }
+
+        valiedTokens.forEach(t -> t.setLogout(true));
+        tokenRepository.saveAll(valiedTokens);
     }
 
     private void savedToken(String jwt, User user) {

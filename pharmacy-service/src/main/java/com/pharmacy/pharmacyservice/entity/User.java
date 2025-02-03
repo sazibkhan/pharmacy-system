@@ -1,22 +1,28 @@
 package com.pharmacy.pharmacyservice.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import com.pharmacy.pharmacyservice.entity.Role;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 
 @Entity
-public class User  implements UserDetails {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
     private String name;
     @Column(unique = true, nullable = false)
     private String email;
@@ -37,9 +43,6 @@ public class User  implements UserDetails {
 
     @OneToMany
     private List<Token> tokens;
-
-
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

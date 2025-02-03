@@ -6,7 +6,6 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.util.List;
 
-
 @Entity
 @Getter
 @Setter
@@ -17,7 +16,7 @@ public class SalesEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name="sales_date")
+    @Column(name = "sales_date")
     private LocalDate salesDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -32,6 +31,5 @@ public class SalesEntity {
 
     @OneToMany(mappedBy = "sales", fetch = FetchType.LAZY)
     private List<SalesItemEntity> items;
-
 
 }
