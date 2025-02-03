@@ -1,4 +1,4 @@
-package com.pharmacy.pharmacyservice.dto;
+package com.pharmacy.pharmacyservice.dto.response;
 
 public class AuthenticationResponse {
     private String token;

@@ -1,7 +1,7 @@
 package com.pharmacy.pharmacyservice.jwt;
 
 import com.pharmacy.pharmacyservice.entity.User;
-import com.pharmacy.pharmacyservice.repository.ITokenRepository;
+import com.pharmacy.pharmacyservice.repository.TokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -23,14 +23,14 @@ public class JwtService {
     private static long VALIDITY = TimeUnit.MINUTES.toMinutes(20000000);
 
     @Autowired
-    private ITokenRepository tokenRepository;
+    private TokenRepository tokenRepository;
 
     // Create new Token
     public String generateToken(User user) {
         return Jwts.builder()
                 .signWith(generateKey())
                 .subject(user.getUsername())
-               // .claim("role",user.getRole())
+                .claim("role",user.getRole())
                 .issuedAt(Date.from(Instant.now()))
                 .expiration(Date.from(Instant.now().plusMillis(VALIDITY)))
                 .compact();
