@@ -29,15 +29,18 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+
 
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> register(
             @RequestPart(value = "image") MultipartFile image,
             @RequestPart(value = "user") String userJson) {
-        try {
+        try{
+
+            ObjectMapper objectMapper = new ObjectMapper();
             User user = objectMapper.readValue(userJson, User.class);
+
+
             AuthenticationResponse response = authService.registration(user, image);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (IOException e) {
@@ -47,6 +50,8 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new AuthenticationResponse(null, e.getMessage()));
         }
     }
+
+
 
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> login(@Valid @RequestBody UserLoginRequest request) {

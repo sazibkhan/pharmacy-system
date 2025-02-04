@@ -2,6 +2,7 @@ package com.pharmacy.pharmacyservice.service;
 
 import com.pharmacy.pharmacyservice.dto.request.UserLoginRequest;
 import com.pharmacy.pharmacyservice.dto.response.AuthenticationResponse;
+import com.pharmacy.pharmacyservice.entity.Role;
 import com.pharmacy.pharmacyservice.entity.Token;
 import com.pharmacy.pharmacyservice.entity.User;
 import com.pharmacy.pharmacyservice.jwt.JwtService;
@@ -43,16 +44,14 @@ public class AuthService {
         this.authenticationManager = authenticationManager;
     }
 
-    public AuthenticationResponse registration(User user, MultipartFile file) {
+    public AuthenticationResponse registration(User user, MultipartFile file) throws IOException {
         checkUser(user);
 
-        if (file == null || file.isEmpty()) {
-            try {
-                throw new IOException("File is empty");
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+        String imageFileName = "";
 
-            }
+        if (file != null && !file.isEmpty()) {
+            imageFileName = savedImage(file, user);
+
         }
         User newUser = new User();
         newUser.setName(user.getName());
@@ -61,12 +60,12 @@ public class AuthService {
         newUser.setCell(user.getCell());
         newUser.setDob(user.getDob());
         newUser.setGender(user.getGender());
-        newUser.setRole(user.getRole());
+        newUser.setRole(Role.valueOf("USER"));
         newUser.setAddress(user.getAddress());
 
         newUser.setLock(true);
         newUser.setActive(false);
-        newUser.setImage(savedImae(file, user));
+        newUser.setImage(imageFileName);
         userRepository.save(newUser);
 
         String jwt = jwtService.generateToken(user);
@@ -116,28 +115,16 @@ public class AuthService {
             throw new RuntimeException("User already exists");
         }
     }
-
-    private String savedImae(MultipartFile file, User user) {
+    private String savedImage(MultipartFile file, User user) throws IOException {
         Path uploadPath = Paths.get(uploadDir, "users");
-        // check folder is exists or not
         if (!Files.exists(uploadPath)) {
-            // if not then create the folder
-            try {
-                Files.createDirectories(uploadPath);
-            } catch (java.io.IOException e) {
-                throw new RuntimeException(e);
-            }
+            Files.createDirectories(uploadPath);
         }
+        String fileName = user.getName() + "_" + UUID.randomUUID();
+        Path filePath = uploadPath.resolve(fileName);
 
-        // this name will saved and we catch the image bu this name from frontend
-        String filename = user.getName() + "_" + UUID.randomUUID();
-        Path filePath = uploadPath.resolve(filename);
-        try {
-            Files.copy(file.getInputStream(), filePath);
-        } catch (java.io.IOException e) {
-            throw new RuntimeException(e);
-        }
-        return filename;
+        Files.copy(file.getInputStream(), filePath);
+        return fileName;
 
     }
 }

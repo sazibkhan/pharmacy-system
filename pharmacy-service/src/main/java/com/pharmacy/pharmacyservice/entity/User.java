@@ -123,6 +123,10 @@ public class User implements UserDetails {
         this.address = address;
     }
 
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
     public Date getDob() {
         return dob;
     }
@@ -165,10 +169,6 @@ public class User implements UserDetails {
 
     public Role getRole() {
         return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
     }
 
     public List<Token> getTokens() {
