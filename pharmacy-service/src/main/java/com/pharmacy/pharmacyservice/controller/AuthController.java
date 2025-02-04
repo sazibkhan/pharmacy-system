@@ -10,11 +10,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pharmacy.pharmacyservice.dto.request.UserLoginRequest;
 import com.pharmacy.pharmacyservice.dto.response.AuthenticationResponse;
 import com.pharmacy.pharmacyservice.entity.User;
@@ -29,17 +29,19 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-
-
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> register(
-            @RequestPart(value = "image") MultipartFile image,
-            @RequestPart(value = "user") String userJson) {
-        try{
 
-            ObjectMapper objectMapper = new ObjectMapper();
-            User user = objectMapper.readValue(userJson, User.class);
+            @RequestPart User user,
+            @RequestPart(value = "image") MultipartFile image) {
+        if (image == null || image.isEmpty()) {
+            System.out.println("Image File is missing!");
+            return ResponseEntity.badRequest().body(null);
+        }
+        try {
 
+            // ObjectMapper objectMapper = new ObjectMapper();
+            // User user = objectMapper.readValue(userJson, User.class);
 
             AuthenticationResponse response = authService.registration(user, image);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -50,8 +52,6 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new AuthenticationResponse(null, e.getMessage()));
         }
     }
-
-
 
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> login(@Valid @RequestBody UserLoginRequest request) {

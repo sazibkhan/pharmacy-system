@@ -68,8 +68,8 @@ public class AuthService {
         newUser.setImage(imageFileName);
         userRepository.save(newUser);
 
-        String jwt = jwtService.generateToken(user);
-        savedToken(jwt, user);
+        String jwt = jwtService.generateToken(newUser);
+        savedToken(jwt, newUser);
         return new AuthenticationResponse(jwt, "User successfully registered!");
 
     }
