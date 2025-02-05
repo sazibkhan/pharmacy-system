@@ -8,6 +8,10 @@ import com.pharmacy.pharmacyservice.entity.User;
 import com.pharmacy.pharmacyservice.jwt.JwtService;
 import com.pharmacy.pharmacyservice.repository.TokenRepository;
 import com.pharmacy.pharmacyservice.repository.UserRepository;
+
+import jakarta.mail.MessagingException;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -44,6 +48,9 @@ public class AuthService {
         this.authenticationManager = authenticationManager;
     }
 
+    @Autowired
+    private EmailService emailService;
+
     public AuthenticationResponse registration(User user, MultipartFile file) throws IOException {
         checkUser(user);
 
@@ -70,6 +77,8 @@ public class AuthService {
 
         String jwt = jwtService.generateToken(newUser);
         savedToken(jwt, newUser);
+
+        sendEmailForActive(newUser);
         return new AuthenticationResponse(jwt, "User successfully registered!");
 
     }
@@ -115,6 +124,7 @@ public class AuthService {
             throw new RuntimeException("User already exists");
         }
     }
+
     private String savedImage(MultipartFile file, User user) throws IOException {
         Path uploadPath = Paths.get(uploadDir, "users");
         if (!Files.exists(uploadPath)) {
@@ -127,4 +137,39 @@ public class AuthService {
         return fileName;
 
     }
+
+    // we will sent email for active account
+
+    private void sendEmailForActive(User user) {
+        // this will be changed by your port
+        String activationLink = "http://localhost:8080/auth/active/" + user.getId();
+        String mailtext = "<h2> Dear " + user.getName() + "</h2>"
+                + "<p>Please active Your acount by thick this link</p>"
+                + "<a href=\"" + activationLink + "\">Active account</a>";
+
+        String subject = "Confirm Registration";
+        try{
+            emailService.sendSimpleEmail(user.getEmail(), subject, mailtext);
+        }catch(MessagingException e){
+            throw new RuntimeException();
+        }
+    }
+
+    //done
+
+    public String activeUser(long id){
+        User user = userRepository.findById(id).orElseThrow(
+            ()-> new RuntimeException("User not found by this id")
+        );
+
+        if(user!=null){
+            user.setActive(true);
+            userRepository.save(user);
+            return "User actived! ";
+        }else{
+            return "Invalid activation token!";
+        }
+    }
+
+    
 }
