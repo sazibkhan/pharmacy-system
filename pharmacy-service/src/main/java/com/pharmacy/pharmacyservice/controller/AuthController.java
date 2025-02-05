@@ -21,6 +21,7 @@ import com.pharmacy.pharmacyservice.dto.request.UserLoginRequest;
 import com.pharmacy.pharmacyservice.dto.response.AuthenticationResponse;
 import com.pharmacy.pharmacyservice.entity.User;
 import com.pharmacy.pharmacyservice.service.AuthService;
+import com.pharmacy.pharmacyservice.service.ForgetPassword;
 
 import jakarta.validation.Valid;
 
@@ -30,6 +31,9 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private ForgetPassword forgetPassword;
 
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> register(
@@ -82,25 +86,55 @@ public class AuthController {
         }
     }
 
-
-
     // need one controller to active the account
 
-    //active
+    // active
     @GetMapping("/active/{id}")
-    public ResponseEntity<String> activeUser(@PathVariable("id") long id){
-        System.out.println("Up try");
-        try{
-            System.out.println(
-                "In try"
-            );
-            String res= authService.activeUser(id);
+    public ResponseEntity<String> activeUser(@PathVariable("id") long id) {
+
+        try {
+
+            String res = authService.activeUser(id);
             return ResponseEntity.ok(res);
-        }catch(UsernameNotFoundException e){
+        } catch (UsernameNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
 
-        }catch(Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body((e.getMessage()));
         }
+    }
+
+    @PostMapping("/forget")
+    public ResponseEntity<String> forgetPassword(@RequestPart String email) {
+        try {
+            forgetPassword.sendEmailForForgetPassword(email);
+            return ResponseEntity.ok("Send email, check your email");
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body((e.getMessage()));
+        }
+
+    }
+
+    @PostMapping("/newpassword")
+    public ResponseEntity<String> newPassword(
+
+            @RequestPart String email,
+            @RequestPart long code,
+            @RequestPart String password
+
+    ) {
+        try {
+            forgetPassword.confirmedPassword(email, code, password);
+            return ResponseEntity.ok("Password changed!");
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body((e.getMessage()));
+        }
+
     }
 }
